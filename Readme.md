@@ -6,9 +6,12 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 
 ## Currently supported messages
 
-|          |                               |                  |                    |
-| -------- | ----------------------------- | ---------------- | ------------------ |
+This is the current list of supported messages, you can find more detailed information [here](doc/message.md)
+
+
+
 | 帧类型码 | 帧类型码名称                  | 数据传送方向     | 已支持             |
+| -------- | ----------------------------- | ---------------- | ------------------ |
 | 0x01     | 充电桩登录认证                | 充电桩->运营平台 | :white_check_mark: |
 | 0x02     | 登录认证应答                  | 运营平台->充电桩 | :white_check_mark: |
 | 0x03     | 充电桩心跳包                  | 充电桩->运营平台 | :white_check_mark: |
@@ -61,3 +64,10 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 | 0xA3     | 远程并充启机命令回复          | 运营平台->充电桩 |                    |
 | 0xA4     | 运营平台远程控制并充启机      | 充电桩->运营平台 |                    |
 
+
+
+## Quick Start
+
+
+
+## Build it yourself
