@@ -4,6 +4,24 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 
 
 
+## Quick Start
+
+You can find latest release [here](https://github.com/LLLLimbo/ykc-proxy-server/releases).
+
+Run it with:
+
+```shell
+./ykc-proxy-server
+```
+
+
+
+## Build it yourself
+
+
+
+
+
 ## Currently supported messages
 
 This is the current list of supported messages, you can find more detailed information [here](doc/message.md)
@@ -66,8 +84,4 @@ This is the current list of supported messages, you can find more detailed infor
 
 
 
-## Quick Start
-
-
-
-## Build it yourself
+## 
