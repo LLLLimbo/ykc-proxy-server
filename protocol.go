@@ -7,6 +7,62 @@ import (
 	"strconv"
 )
 
+const (
+	//start flag
+	StartFlag = byte(0x68)
+
+	//device -> platform
+	Verification                = byte(0x01)
+	Heartbeat                   = byte(0x03)
+	BillingModelVerification    = byte(0x05)
+	BillingModelRequest         = byte(0x08)
+	OfflineDataReport           = byte(0x13)
+	ChargingHandshake           = byte(0x15)
+	Configuration               = byte(0x17)
+	ChargingFinished            = byte(0x19)
+	ErrorReport                 = byte(0x1b)
+	BmsInterrupted              = byte(0x1d)
+	ChargingPileInterrupted     = byte(0x21)
+	ChargingMetrics             = byte(0x23)
+	BmsInformation              = byte(0x25)
+	ActiveChargingRequest       = byte(0x31)
+	RemoteBootstrapResponse     = byte(0x33)
+	RemoteShutdownResponse      = byte(0x35)
+	TransactionRecord           = byte(0x3b)
+	BalanceUpdateResponse       = byte(0x41)
+	CardSynchronizationResponse = byte(0x43)
+	CardClearingResponse        = byte(0x45)
+	CardQueryingResponse        = byte(0x47)
+	SetWorkingParamsResponse    = byte(0x51)
+	NtpResponse                 = byte(0x55)
+	SetBillingModelResponse     = byte(0x57)
+	FloorLockDataUpload         = byte(0x61)
+	Response                    = byte(0x63)
+	RemoteRebootResponse        = byte(0x91)
+	OtaResponse                 = byte(0x93)
+
+	// platform -> device
+	VerificationResponse             = byte(0x02)
+	HeartbeatResponse                = byte(0x04)
+	BillingModelVerificationResponse = byte(0x06)
+	BillingModelResponse             = byte(0x0a)
+	RealTimeDataRequest              = byte(0x12)
+	ChargingRequestConfirmed         = byte(0x32)
+	RemoteBootstrapRequest           = byte(0x34)
+	RemoteShutdownRequest            = byte(0x36)
+	TransactionRecordConfirmed       = byte(0x40)
+	AccountBalanceRemoteUpdate       = byte(0x42)
+	CardSynchronizationRequest       = byte(0x44)
+	CardClearingRequest              = byte(0x46)
+	CardQueryingRequest              = byte(0x48)
+	SetWorkingParamsRequest          = byte(0x52)
+	NtpRequest                       = byte(0x56)
+	SetBillingModelRequest           = byte(0x58)
+	UpDownFloorLock                  = byte(0x62)
+	RemoteResponse                   = byte(0x92)
+	OtaRequest                       = byte(0x94)
+)
+
 type Header struct {
 	Length    int    `json:"length"`
 	Seq       int    `json:"seq"`
@@ -17,16 +73,16 @@ type Header struct {
 type VerificationMessage struct {
 	Header          *Header `json:"header"`
 	Id              string  `json:"Id"`
-	ElcType         string  `json:"elcType"`
+	ElcType         int     `json:"elcType"`
 	Guns            int     `json:"guns"`
 	ProtocolVersion int     `json:"protocolVersion"`
 	SoftwareVersion string  `json:"softwareVersion"`
-	Network         string  `json:"network"`
+	Network         int     `json:"network"`
 	Sim             string  `json:"sim"`
-	Operator        string  `json:"operator"`
+	Operator        int     `json:"operator"`
 }
 
-func PackVerificationMessage(hex []string, header *Header) *VerificationMessage {
+func PackVerificationMessage(buf []byte, hex []string, header *Header) *VerificationMessage {
 	//Id
 	id := ""
 	for _, v := range hex[6:13] {
@@ -34,40 +90,20 @@ func PackVerificationMessage(hex []string, header *Header) *VerificationMessage 
 	}
 
 	//type
-	var elcType string
-	if hex[13] == "01" {
-		elcType = "AC"
-	} else {
-		elcType = "DC"
-	}
+	elcType := int(buf[13])
 
 	//gun number
-	guns, _ := strconv.ParseInt(hex[14], 16, 64)
+	guns := int(buf[14])
 
 	//protocol version
-	protocolVersion, _ := strconv.ParseInt(hex[15], 16, 64)
-	protocolVersion = protocolVersion / 10
+	protocolVersion := int(buf[15]) / 10
 
 	//software version
 	softwareVersionBytes, _ := hex2.DecodeString(MakeHexStringFromHexArray(hex[16:24]))
 	softwareVersion := string(softwareVersionBytes)
 
 	//network type
-	var network string
-	switch hex[25] {
-	case "00":
-		network = "SIM"
-		break
-	case "01":
-		network = "LAN"
-		break
-	case "02":
-		network = "WAN"
-		break
-	default:
-		network = "OTHER"
-		break
-	}
+	network := int(buf[25])
 
 	//sim
 	var sim string
@@ -76,28 +112,14 @@ func PackVerificationMessage(hex []string, header *Header) *VerificationMessage 
 	}
 
 	//operator
-	var operator string
-	switch hex[36] {
-	case "00":
-		operator = "CM"
-		break
-	case "02":
-		operator = "CT"
-		break
-	case "03":
-		operator = "CU"
-		break
-	default:
-		operator = "OTHER"
-		break
-	}
+	operator := int(buf[36])
 
 	msg := &VerificationMessage{
 		Header:          header,
 		Id:              id,
 		ElcType:         elcType,
-		Guns:            int(guns),
-		ProtocolVersion: int(protocolVersion),
+		Guns:            guns,
+		ProtocolVersion: protocolVersion,
 		SoftwareVersion: softwareVersion,
 		Network:         network,
 		Sim:             sim,
@@ -114,22 +136,22 @@ type VerificationResponseMessage struct {
 
 func PackVerificationResponseMessage(msg *VerificationResponseMessage) []byte {
 	var resp bytes.Buffer
-	resp.Write(HexToBytes("680c"))
+	resp.Write([]byte{StartFlag, 0x0c})
 	seqStr := fmt.Sprintf("%x", msg.Header.Seq)
 	seq := ConvertIntSeqToReversedHexArr(seqStr)
 	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
-	encrypted := "00"
+	encrypted := byte(0x00)
 	if msg.Header.Encrypted {
-		encrypted = "01"
+		encrypted = byte(0x01)
 	}
-	resp.Write(HexToBytes(encrypted))
-	resp.Write(HexToBytes("02"))
+	resp.Write([]byte{encrypted})
+	resp.Write([]byte{VerificationResponse})
 	resp.Write(HexToBytes(msg.Id))
-	result := "01"
+	result := byte(0x01)
 	if msg.Result {
-		result = "00"
+		result = byte(0x00)
 	}
-	resp.Write(HexToBytes(result))
+	resp.Write([]byte{result})
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
 	return resp.Bytes()
 }
@@ -173,11 +195,11 @@ func PackBillingModelVerificationResponseMessage(msg *BillingModelVerificationRe
 	seq := ConvertIntSeqToReversedHexArr(seqStr)
 	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
 
-	encrypted := "00"
+	encrypted := byte(0x00)
 	if msg.Header.Encrypted {
-		encrypted = "01"
+		encrypted = byte(0x01)
 	}
-	resp.Write(HexToBytes(encrypted))
+	resp.Write([]byte{encrypted})
 	resp.Write(HexToBytes("06"))
 	resp.Write(HexToBytes(msg.Id))
 	resp.Write(HexToBytes(msg.BillingModelCode))
@@ -266,11 +288,11 @@ func PackRemoteBootstrapRequestMessage(msg *RemoteBootstrapRequestMessage) []byt
 	seq := ConvertIntSeqToReversedHexArr(seqStr)
 	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
 
-	encrypted := "00"
+	encrypted := byte(0x00)
 	if msg.Header.Encrypted {
-		encrypted = "01"
+		encrypted = byte(0x01)
 	}
-	resp.Write(HexToBytes(encrypted))
+	resp.Write([]byte{encrypted})
 	resp.Write(HexToBytes("34"))
 	resp.Write(HexToBytes(msg.TradeSeq))
 	resp.Write(HexToBytes(msg.Id))

@@ -7,8 +7,8 @@ import (
 	"net"
 )
 
-func VerificationRouter(hex []string, header *Header, conn net.Conn) {
-	msg := PackVerificationMessage(hex, header)
+func VerificationRouter(buf []byte, hex []string, header *Header, conn net.Conn) {
+	msg := PackVerificationMessage(buf, hex, header)
 
 	log.WithFields(log.Fields{
 		"id":               msg.Id,

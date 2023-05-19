@@ -9,61 +9,6 @@ import (
 	"time"
 )
 
-// device -> platform
-const (
-	Verification                = "1"
-	Heartbeat                   = "3"
-	BillingModelVerification    = "5"
-	BillingModelRequest         = "9"
-	OfflineDataReport           = "13"
-	ChargingHandshake           = "15"
-	Configuration               = "17"
-	ChargingFinished            = "19"
-	ErrorReport                 = "1b"
-	BmsInterrupted              = "1d"
-	ChargingPileInterrupted     = "21"
-	ChargingMetrics             = "23"
-	BmsInformation              = "25"
-	ActiveChargingRequest       = "31"
-	RemoteBootstrapResponse     = "33"
-	RemoteShutdownResponse      = "35"
-	TransactionRecord           = "3b"
-	BalanceUpdateResponse       = "41"
-	CardSynchronizationResponse = "43"
-	CardClearingResponse        = "45"
-	CardQueryingResponse        = "47"
-	SetWorkingParamsResponse    = "51"
-	NtpResponse                 = "55"
-	SetBillingModelResponse     = "57"
-	FloorLockDataUpload         = "61"
-	Response                    = "63"
-	RemoteRebootResponse        = "91"
-	OtaResponse                 = "93"
-)
-
-// platform -> device
-const (
-	VerificationResponse             = "2"
-	HeartbeatResponse                = "4"
-	BillingModelVerificationResponse = "6"
-	BillingModelResponse             = "0a"
-	RealTimeDataRequest              = "12"
-	ChargingRequestConfirmed         = "32"
-	RemoteBootstrapRequest           = "34"
-	RemoteShutdownRequest            = "36"
-	TransactionRecordConfirmed       = "40"
-	AccountBalanceRemoteUpdate       = "42"
-	CardSynchronizationRequest       = "44"
-	CardClearingRequest              = "46"
-	CardQueryingRequest              = "48"
-	SetWorkingParamsRequest          = "52"
-	NtpRequest                       = "56"
-	SetBillingModelRequest           = "58"
-	UpDownFloorLock                  = "62"
-	RemoteResponse                   = "92"
-	OtaRequest                       = "94"
-)
-
 var gabyCRCHi = []byte{
 	0x00, 0xc1, 0x81, 0x40, 0x01, 0xc0, 0x80, 0x41, 0x01, 0xc0,
 	0x80, 0x41, 0x00, 0xc1, 0x81, 0x40, 0x01, 0xc0, 0x80, 0x41,

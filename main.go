@@ -6,15 +6,9 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
-
-type ProxyEnv struct {
-	Host string
-	Port int
-}
 
 func main() {
 	log.SetFormatter(&log.TextFormatter{
@@ -90,26 +84,26 @@ func handleConnection(conn net.Conn) {
 }
 
 func drain(conn net.Conn) error {
-	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
 	if err != nil {
 		log.Error("error reading ", err)
 		return err
 	}
 
-	hex := BytesToHex(buffer[:n])
+	hex := BytesToHex(buf[:n])
 
 	//is encrypted ?
 	encrypted := false
-	if hex[4] == "1" {
+	if buf[4] == byte(0x01) {
 		encrypted = true
 	}
 
 	//message length
-	length, err := strconv.ParseInt(hex[1], 16, 64)
+	length := buf[1]
 
 	//message sequence number
-	seq, err := strconv.ParseInt(hex[3]+hex[2], 16, 64)
+	seq := buf[3]<<8 | buf[2]
 
 	header := &Header{
 		Length:    int(length),
@@ -123,27 +117,27 @@ func drain(conn net.Conn) error {
 		"encrypted": encrypted,
 		"length":    length,
 		"seq":       seq,
-		"frame_id":  hex[5],
+		"frame_id":  int(buf[5]),
 	}).Info("received message")
 
-	switch hex[5] {
-	case "01":
-		VerificationRouter(hex, header, conn)
+	switch buf[5] {
+	case Verification:
+		VerificationRouter(buf, hex, header, conn)
 		break
-	case "03":
+	case Heartbeat:
 		HeartbeatRouter(hex, header, conn)
 		break
-	case "05":
+	case BillingModelVerification:
 		BillingModelVerificationRouter(hex, header, conn)
 		break
-	case "13":
+	case OfflineDataReport:
 		OfflineDataReportMessageRouter(hex, header)
-	case "33":
+	case RemoteBootstrapResponse:
 		RemoteBootstrapResponseRouter(hex, header)
-	case "35":
+	case RemoteShutdownResponse:
 		RemoteShutdownResponseRouter(hex, header)
-	case "3b":
-		TransactionRecordMessageRouter(buffer, hex, header)
+	case TransactionRecord:
+		TransactionRecordMessageRouter(buf, hex, header)
 	default:
 		break
 
