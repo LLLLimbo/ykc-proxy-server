@@ -6,6 +6,10 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 
 ## Quick Start
 
+> :warning: Before you start, make sure your device can access your server.
+
+
+
 You can find latest release [here](https://github.com/LLLLimbo/ykc-proxy-server/releases).
 
 Run it with:
@@ -13,6 +17,31 @@ Run it with:
 ```shell
 ./ykc-proxy-server
 ```
+
+
+
+Next, you need to change the server address your charging device is pointing to, using the format ${ip}:${port}. The specific modification method depends on your charging device. You can consult your device supplier for details, but I will also demonstrate using my test device as an example.
+
+1. Download and install [CP210x USB to UART Bridge VCP Drivers](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads)
+
+2. Prepare breadboard jumper wires and 5 pin USB Header to USB Dupont Cable  <img src="Readme.assets/image-20230522110314226.png" alt="image-20230522110314226" style="zoom: 25%;" /><img src="Readme.assets/image-20230522111148197.png" alt="image-20230522111148197" style="zoom:25%;" />
+
+3. Connect in the following way (Please note that different brands of charging device may have different ports connected!)<img src="Readme.assets/image-20230522112417120.png" alt="image-20230522112417120" style="zoom: 25%;" />
+
+4. The manufacturer of charging device I tested with provided a configuration tool. However, not all manufacturers offer such tools, so you need to consult your device supplier.![image-20230522141615559](Readme.assets/image-20230522141615559.png)
+
+5. If there are no problems with the above steps, you should see the following log output:
+
+   ```json
+   INFO[2023-05-22T14:27:44+08:00] new client connected                          address="39.144.11.48:37711"
+   INFO[2023-05-22T14:27:53+08:00] received message                              encrypted=false frame_id=1 hex="[68 22 e7 91 00 01 12 34 56 20 23 03 78 01 01 0f 56 30 30 32 2e 30 35 36 00 89 86 04 52 16 19 70 10 71 96 00 67 e9]" length=34 seq=231
+   DEBU[2023-05-22T14:27:53+08:00] [01] Verification message                     elc_type=1 guns=1 id=12345620230378 network=137 operator=103 protocol_version=1 sim=86045216197010719600 software_version=V002.056
+   INFO[2023-05-22T14:28:03+08:00] received message                              encrypted=false frame_id=1 hex="[68 22 e8 91 00 01 12 34 56 20 23 03 78 01 01 0f 56 30 30 32 2e 30 35 36 00 89 86 04 52 16 19 70 10 71 96 00 64 02]" length=34 seq=232
+   ```
+
+   
+
+   
 
 
 
