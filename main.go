@@ -1,16 +1,20 @@
 package main
 
 import (
+	"flag"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
 
 func main() {
+	parseOptions()
+
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors:   true,
 		FullTimestamp: true,
@@ -26,6 +30,32 @@ func main() {
 	sig := <-sigChan
 	log.Info("exit:", sig)
 	os.Exit(0)
+}
+
+func parseOptions() *Options {
+	var host = flag.String("host", "0.0.0.0", "host")
+	var port = flag.Int("port", 27600, "port")
+	var autoVerification = flag.Bool("auto-verification", false, "auto verification")
+	var autoHeartbeatResponse = flag.Bool("auto-heartbeat-response", false, "auto heartbeat response")
+	var autoBillingModelVerify = flag.Bool("auto-billing-model-verify", false, "auto billing model verify")
+	var messagingServerType = flag.String("messaging-server-type", "http", "messaging server type,default to http")
+	var servers = flag.String("servers", "http://127.0.0.1:8080", "servers,use commas to separate multiple server addresses")
+	var username = flag.String("username", "admin", "username")
+	var password = flag.String("password", "admin", "password")
+	flag.Parse()
+	serversArr := strings.Split(*servers, ",")
+	options := &Options{
+		Host:                   *host,
+		Port:                   *port,
+		AutoVerification:       *autoVerification,
+		AutoHeartbeatResponse:  *autoHeartbeatResponse,
+		AutoBillingModelVerify: *autoBillingModelVerify,
+		MessagingServerType:    *messagingServerType,
+		Servers:                serversArr,
+		Username:               *username,
+		Password:               *password,
+	}
+	return options
 }
 
 func enableTcpServer() {
