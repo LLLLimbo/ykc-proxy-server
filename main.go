@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -18,8 +19,27 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
-	go enableTcpServer()
-	go enableHttpServer()
+	opt := parseOptions()
+
+	//define message forwarder
+	var f MessageForwarder
+	switch opt.MessagingServerType {
+	case "http":
+		f := &HTTPForwarder{}
+		opt.MessageForwarder = f
+		break
+	case "nats":
+		f := &NatsForwarder{}
+		opt.MessageForwarder = f
+		break
+	default:
+		f = nil
+		opt.MessageForwarder = f
+		break
+	}
+
+	go enableTcpServer(opt)
+	go enableHttpServer(opt)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT)
@@ -28,9 +48,9 @@ func main() {
 	os.Exit(0)
 }
 
-func enableTcpServer() {
-	host := "0.0.0.0"
-	port := "27600"
+func enableTcpServer(opt *Options) {
+	host := opt.Host
+	port := strconv.Itoa(opt.TcpPort)
 	addr, err := net.ResolveTCPAddr("tcp", host+":"+port)
 	if err != nil {
 		log.Error("error resolving address:", err)
@@ -52,23 +72,26 @@ func enableTcpServer() {
 			continue
 		}
 		StoreClient(conn.RemoteAddr().String(), conn)
-		go handleConnection(conn)
+		go handleConnection(opt, conn)
 	}
 }
 
-func enableHttpServer() {
+func enableHttpServer(opt *Options) {
 	r := gin.Default()
 	r.POST("/proxy/02", VerificationResponseRouter)
 	r.POST("/proxy/06", BillingModelVerificationResponseRouter)
 	r.POST("/proxy/34", RemoteBootstrapRequestRouter)
 	r.POST("/proxy/36", RemoteShutdownRequestRouter)
-	err := r.Run("0.0.0.0:9556")
+
+	host := opt.Host
+	port := strconv.Itoa(opt.HttpPort)
+	err := r.Run(host + ":" + port)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(opt *Options, conn net.Conn) {
 	defer conn.Close()
 
 	log.WithFields(log.Fields{
@@ -77,13 +100,13 @@ func handleConnection(conn net.Conn) {
 
 	var connErr error
 	for connErr == nil {
-		connErr = drain(conn)
+		connErr = drain(opt, conn)
 		time.Sleep(time.Millisecond * 1)
 	}
 
 }
 
-func drain(conn net.Conn) error {
+func drain(opt *Options, conn net.Conn) error {
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
 	if err != nil {
@@ -122,22 +145,22 @@ func drain(conn net.Conn) error {
 
 	switch buf[5] {
 	case Verification:
-		VerificationRouter(buf, hex, header, conn)
+		VerificationRouter(opt, buf, hex, header, conn)
 		break
 	case Heartbeat:
-		HeartbeatRouter(hex, header, conn)
+		HeartbeatRouter(opt, hex, header, conn)
 		break
 	case BillingModelVerification:
-		BillingModelVerificationRouter(hex, header, conn)
+		BillingModelVerificationRouter(opt, hex, header, conn)
 		break
 	case OfflineDataReport:
-		OfflineDataReportMessageRouter(hex, header)
+		OfflineDataReportMessageRouter(opt, hex, header)
 	case RemoteBootstrapResponse:
 		RemoteBootstrapResponseRouter(hex, header)
 	case RemoteShutdownResponse:
 		RemoteShutdownResponseRouter(hex, header)
 	case TransactionRecord:
-		TransactionRecordMessageRouter(buf, hex, header)
+		TransactionRecordMessageRouter(opt, buf, hex, header)
 	default:
 		break
 

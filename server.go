@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -16,7 +18,8 @@ const (
 
 type Options struct {
 	Host                   string
-	Port                   int
+	TcpPort                int
+	HttpPort               int
 	AutoVerification       bool
 	AutoHeartbeatResponse  bool
 	AutoBillingModelVerify bool
@@ -24,6 +27,7 @@ type Options struct {
 	Servers                []string
 	Username               string
 	Password               string
+	MessageForwarder       MessageForwarder
 }
 
 type Server struct {
@@ -52,7 +56,7 @@ func (s *Server) Start() {
 	var hl net.Listener
 	var err error
 
-	port := o.Port
+	port := o.TcpPort
 	if port == -1 {
 		port = 0
 	}
@@ -69,7 +73,7 @@ func (s *Server) Start() {
 		return
 	}
 	if port == 0 {
-		o.Port = hl.Addr().(*net.TCPAddr).Port
+		o.TcpPort = hl.Addr().(*net.TCPAddr).Port
 	}
 
 	//go s.acceptConnections(hl, "YKC", func(conn net.Conn) { s.createClient(conn, nil) }, nil)
@@ -149,4 +153,35 @@ func (s *Server) startGoRoutine(f func()) bool {
 	}
 	s.GrMu.Unlock()
 	return started
+}
+
+func parseOptions() *Options {
+	host := flag.String("host", "0.0.0.0", "host")
+	tcpPort := flag.Int("tcpPort", 27600, "tcpPort")
+	httpPort := flag.Int("httpPort", 9556, "httpPort")
+	autoVerification := flag.Bool("autoVerification", false, "autoVerification")
+	autoHeartbeatResponse := flag.Bool("autoHeartbeatResponse", true, "autoHeartbeatResponse")
+	autoBillingModelVerify := flag.Bool("autoBillingModelVerify", false, "autoBillingModelVerify")
+	messagingServerType := flag.String("messagingServerType", "YKC", "messagingServerType")
+	servers := flag.String("servers", "", "servers")
+	username := flag.String("username", "", "username")
+	password := flag.String("password", "", "password")
+	flag.Parse()
+
+	//splitting servers with comma
+	serversArr := strings.Split(*servers, ",")
+
+	opt := &Options{
+		Host:                   *host,
+		TcpPort:                *tcpPort,
+		HttpPort:               *httpPort,
+		AutoVerification:       *autoVerification,
+		AutoHeartbeatResponse:  *autoHeartbeatResponse,
+		AutoBillingModelVerify: *autoBillingModelVerify,
+		MessagingServerType:    *messagingServerType,
+		Servers:                serversArr,
+		Username:               *username,
+		Password:               *password,
+	}
+	return opt
 }

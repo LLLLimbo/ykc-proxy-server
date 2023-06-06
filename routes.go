@@ -7,7 +7,7 @@ import (
 	"net"
 )
 
-func VerificationRouter(buf []byte, hex []string, header *Header, conn net.Conn) {
+func VerificationRouter(opt *Options, buf []byte, hex []string, header *Header, conn net.Conn) {
 	msg := PackVerificationMessage(buf, hex, header)
 
 	log.WithFields(log.Fields{
@@ -21,6 +21,28 @@ func VerificationRouter(buf []byte, hex []string, header *Header, conn net.Conn)
 		"operator":         msg.Operator,
 	}).Debug("[01] Verification message")
 	StoreClient(msg.Id, conn)
+
+	//auto response
+	if opt.AutoVerification {
+		m := &VerificationResponseMessage{
+			Header: &Header{
+				Seq:       0,
+				Encrypted: false,
+			},
+			Id:     msg.Id,
+			Result: true,
+		}
+		_ = ResponseToVerification(m)
+		return
+	}
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("01", b)
+	}
+
 }
 
 func VerificationResponseRouter(c *gin.Context) {
@@ -35,7 +57,7 @@ func VerificationResponseRouter(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "done"})
 }
 
-func HeartbeatRouter(hex []string, header *Header, conn net.Conn) {
+func HeartbeatRouter(opt *Options, hex []string, header *Header, conn net.Conn) {
 	msg := PackHeartbeatMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":         msg.Id,
@@ -43,20 +65,54 @@ func HeartbeatRouter(hex []string, header *Header, conn net.Conn) {
 		"gun_status": msg.GunStatus,
 	}).Debug("[03] Heartbeat message")
 
-	_ = ResponseToHeartbeat(&HeartbeatResponseMessage{
-		Header:   header,
-		Id:       msg.Id,
-		Gun:      msg.Gun,
-		Response: 0,
-	})
+	//auto response
+	if opt.AutoHeartbeatResponse {
+		_ = ResponseToHeartbeat(&HeartbeatResponseMessage{
+			Header:   header,
+			Id:       msg.Id,
+			Gun:      msg.Gun,
+			Response: 0,
+		})
+		return
+	}
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("03", b)
+	}
 }
 
-func BillingModelVerificationRouter(hex []string, header *Header, conn net.Conn) {
+func BillingModelVerificationRouter(opt *Options, hex []string, header *Header, conn net.Conn) {
 	msg := PackBillingModelVerificationMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":                 msg.Id,
 		"billing_model_code": msg.BillingModelCode,
 	}).Debug("[05] BillingModelRequest message")
+
+	//auto response
+	if opt.AutoBillingModelVerify {
+		//todo auto response
+		m := &BillingModelVerificationResponseMessage{
+			Header: &Header{
+				Seq:       0,
+				Encrypted: false,
+			},
+			Id:               msg.Id,
+			BillingModelCode: msg.BillingModelCode,
+			Result:           true,
+		}
+		_ = ResponseToBillingModelVerification(m)
+		return
+	}
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("05", b)
+	}
 }
 
 func BillingModelVerificationResponseRouter(c *gin.Context) {
@@ -94,7 +150,7 @@ func RemoteBootstrapResponseRouter(hex []string, header *Header) {
 	}).Debug("[33] RemoteBootstrapResponse message")
 }
 
-func OfflineDataReportMessageRouter(hex []string, header *Header) {
+func OfflineDataReportMessageRouter(opt *Options, hex []string, header *Header) {
 	msg := PackOfflineDataReportMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":                               msg.Id,
@@ -115,6 +171,13 @@ func OfflineDataReportMessageRouter(hex []string, header *Header) {
 		"charged_amount":                   msg.ChargedAmount,
 		"hardware_failure":                 msg.HardwareFailure,
 	}).Debug("[13] OfflineDataReport message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("13", b)
+	}
 }
 
 func RemoteShutdownResponseRouter(hex []string, header *Header) {
@@ -139,10 +202,17 @@ func RemoteShutdownRequestRouter(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "done"})
 }
 
-func TransactionRecordMessageRouter(raw []byte, hex []string, header *Header) {
+func TransactionRecordMessageRouter(opt *Options, raw []byte, hex []string, header *Header) {
 	msg := PackTransactionRecordMessage(raw, hex, header)
 	msgJson, _ := json.Marshal(msg)
 	log.WithFields(log.Fields{
 		"msg": string(msgJson),
 	}).Debug("[3b] TransactionRecord message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("3b", b)
+	}
 }
