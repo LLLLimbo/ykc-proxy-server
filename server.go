@@ -1,3 +1,7 @@
+/*
+The TCP Server implementation is referenced from nats
+https://github.com/nats-io/nats-server.git
+*/
 package main
 
 import (
@@ -65,14 +69,14 @@ func (s *Server) Start() {
 	hl, err = net.Listen("tcp", hp)
 	if err != nil {
 		s.Mu.Unlock()
-		log.Fatalf("Unable to listen for tcp connections: %v", err)
+		log.Fatalf("unable to listen for tcp connections: %v", err)
 		return
 	}
 	if port == 0 {
 		o.Port = hl.Addr().(*net.TCPAddr).Port
 	}
 
-	//go s.acceptConnections(hl, "YKC", func(conn net.Conn) { s.createClient(conn, nil) }, nil)
+	go s.acceptConnections(hl, "ykc", nil)
 	s.Mu.Unlock()
 }
 
@@ -84,8 +88,7 @@ func (s *Server) isRunning() bool {
 	return running
 }
 
-// The following code is modified from nats https://github.com/nats-io/nats-server.git
-func (s *Server) acceptConnections(l net.Listener, acceptName string, createFunc func(conn net.Conn), errFunc func(err error) bool) {
+func (s *Server) acceptConnections(l net.Listener, acceptName string, errFunc func(err error) bool) {
 	tmpDelay := ACCEPT_MIN_SLEEP
 
 	for {
@@ -101,7 +104,7 @@ func (s *Server) acceptConnections(l net.Listener, acceptName string, createFunc
 		}
 		tmpDelay = ACCEPT_MIN_SLEEP
 		if !s.startGoRoutine(func() {
-			createFunc(conn)
+			createFunc(s, conn)
 			s.GrWG.Done()
 		}) {
 			conn.Close()
@@ -149,4 +152,80 @@ func (s *Server) startGoRoutine(f func()) bool {
 	}
 	s.GrMu.Unlock()
 	return started
+}
+
+func createFunc(s *Server, conn net.Conn) {
+	defer conn.Close()
+
+	log.WithFields(log.Fields{
+		"address": conn.RemoteAddr().String(),
+	}).Info("new client connected")
+
+	var connErr error
+	for connErr == nil {
+		connErr = drain_(s, conn)
+		time.Sleep(time.Millisecond * 1)
+	}
+}
+
+func drain_(s *Server, conn net.Conn) error {
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		log.Error("error reading ", err)
+		return err
+	}
+
+	hex := BytesToHex(buf[:n])
+
+	//is encrypted ?
+	encrypted := false
+	if buf[4] == byte(0x01) {
+		encrypted = true
+	}
+
+	//message length
+	length := buf[1]
+
+	//message sequence number
+	seq := buf[3]<<8 | buf[2]
+
+	header := &Header{
+		Length:    int(length),
+		Seq:       int(seq),
+		Encrypted: encrypted,
+		FrameId:   hex[5],
+	}
+
+	log.WithFields(log.Fields{
+		"hex":       hex,
+		"encrypted": encrypted,
+		"length":    length,
+		"seq":       seq,
+		"frame_id":  int(buf[5]),
+	}).Info("received message")
+
+	switch buf[5] {
+	case Verification:
+		VerificationRouter(buf, hex, header, conn)
+		break
+	case Heartbeat:
+		HeartbeatRouter(hex, header, conn)
+		break
+	case BillingModelVerification:
+		BillingModelVerificationRouter(hex, header, conn)
+		break
+	case OfflineDataReport:
+		OfflineDataReportMessageRouter(hex, header)
+	case RemoteBootstrapResponse:
+		RemoteBootstrapResponseRouter(hex, header)
+	case RemoteShutdownResponse:
+		RemoteShutdownResponseRouter(hex, header)
+	case TransactionRecord:
+		TransactionRecordMessageRouter(buf, hex, header)
+	default:
+		break
+
+	}
+	return nil
 }
