@@ -40,6 +40,13 @@ func (h *HTTPForwarder) Publish(mid string, message []byte) error {
 		e = e[:len(e)-1]
 	}
 
+	e = e + "/" + mid
+
+	log.WithFields(log.Fields{
+		"mid":      mid,
+		"endpoint": e,
+	}).Info("forwarding message to http endpoint")
+
 	client := resty.New()
 	var res string
 	client.SetTimeout(3 * time.Second)
@@ -47,7 +54,7 @@ func (h *HTTPForwarder) Publish(mid string, message []byte) error {
 		SetHeader("Content-Type", "application/json").
 		SetResult(&res).
 		SetBody(message).
-		Post(e + "/" + mid)
+		Post(e)
 	if err != nil {
 		log.Errorf("error forwarding message: %v", err)
 		return err

@@ -25,7 +25,9 @@ func main() {
 	var f MessageForwarder
 	switch opt.MessagingServerType {
 	case "http":
-		f := &HTTPForwarder{}
+		f := &HTTPForwarder{
+			Endpoints: opt.Servers,
+		}
 		opt.MessageForwarder = f
 		break
 	case "nats":

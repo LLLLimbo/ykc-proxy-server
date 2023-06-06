@@ -93,7 +93,6 @@ func BillingModelVerificationRouter(opt *Options, hex []string, header *Header, 
 
 	//auto response
 	if opt.AutoBillingModelVerify {
-		//todo auto response
 		m := &BillingModelVerificationResponseMessage{
 			Header: &Header{
 				Seq:       0,
