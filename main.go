@@ -84,6 +84,7 @@ func enableHttpServer(opt *Options) {
 	r.POST("/proxy/06", BillingModelVerificationResponseRouter)
 	r.POST("/proxy/34", RemoteBootstrapRequestRouter)
 	r.POST("/proxy/36", RemoteShutdownRequestRouter)
+	r.POST("/proxy/40", TransactionRecordConfirmedRouter)
 
 	host := opt.Host
 	port := strconv.Itoa(opt.HttpPort)

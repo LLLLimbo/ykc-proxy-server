@@ -55,7 +55,7 @@ This is the current list of supported messages, you can find more detailed infor
 | 0x35     | 远程停机命令回复              | 充电桩->运营平台 | :white_check_mark: |
 | 0x36     | 运营平台远程停机              | 运营平台->充电桩 | :white_check_mark: |
 | 0x3B     | 交易记录                      | 充电桩->运营平台 | :white_check_mark: |
-| 0x40     | 交易记录确认                  | 运营平台->充电桩 |                    |
+| 0x40     | 交易记录确认                  | 运营平台->充电桩 | :white_check_mark: |
 | 0x41     | 余额更新应答                  | 充电桩->运营平台 |                    |
 | 0x42     | 远程账户余额更新              | 运营平台->充电桩 |                    |
 | 0x43     | 卡数据同步应答                | 充电桩->运营平台 |                    |

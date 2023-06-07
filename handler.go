@@ -71,3 +71,17 @@ func SendRemoteShutdownRequest(req *RemoteShutdownRequestMessage) error {
 	}).Debug("[36] RemoteShutdownRequest message sent")
 	return nil
 }
+
+func SendTransactionRecordConfirmed(req *TransactionRecordConfirmedMessage) error {
+	c, err := GetClient(req.Id)
+	if err != nil {
+		return err
+	}
+	resp := PackTransactionRecordConfirmedMessage(req)
+	_, _ = c.Write(resp)
+	log.WithFields(log.Fields{
+		"id":      req.Id,
+		"request": BytesToHex(resp),
+	}).Debug("[40] TransactionRecordConfirmed message sent")
+	return nil
+}

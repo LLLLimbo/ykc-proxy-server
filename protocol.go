@@ -693,3 +693,28 @@ func PackTransactionRecordMessage(raw []byte, hex []string, header *Header) *Tra
 	}
 	return msg
 }
+
+type TransactionRecordConfirmedMessage struct {
+	Header   *Header `json:"header"`
+	Id       string  `json:"id"`
+	TradeSeq string  `json:"tradeSeq"`
+	Result   int     `json:"result"`
+}
+
+func PackTransactionRecordConfirmedMessage(msg *TransactionRecordConfirmedMessage) []byte {
+	var resp bytes.Buffer
+	resp.Write([]byte{0x68, 0x15})
+	seqStr := fmt.Sprintf("%x", GenerateSeq())
+	seq := ConvertIntSeqToReversedHexArr(seqStr)
+	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
+	if msg.Header.Encrypted {
+		resp.WriteByte(0x01)
+	} else {
+		resp.WriteByte(0x00)
+	}
+	resp.Write([]byte{0x40})
+	resp.Write(HexToBytes(msg.TradeSeq))
+	resp.Write([]byte(strconv.Itoa(msg.Result)))
+	resp.Write(ModbusCRC(resp.Bytes()[2:]))
+	return resp.Bytes()
+}

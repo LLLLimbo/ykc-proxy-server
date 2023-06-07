@@ -17,17 +17,18 @@ const (
 )
 
 type Options struct {
-	Host                   string
-	TcpPort                int
-	HttpPort               int
-	AutoVerification       bool
-	AutoHeartbeatResponse  bool
-	AutoBillingModelVerify bool
-	MessagingServerType    string
-	Servers                []string
-	Username               string
-	Password               string
-	MessageForwarder       MessageForwarder
+	Host                         string
+	TcpPort                      int
+	HttpPort                     int
+	AutoVerification             bool
+	AutoHeartbeatResponse        bool
+	AutoBillingModelVerify       bool
+	AutoTransactionRecordConfirm bool
+	MessagingServerType          string
+	Servers                      []string
+	Username                     string
+	Password                     string
+	MessageForwarder             MessageForwarder
 }
 
 type Server struct {
@@ -162,6 +163,7 @@ func parseOptions() *Options {
 	autoVerification := flag.Bool("autoVerification", false, "autoVerification")
 	autoHeartbeatResponse := flag.Bool("autoHeartbeatResponse", true, "autoHeartbeatResponse")
 	autoBillingModelVerify := flag.Bool("autoBillingModelVerify", false, "autoBillingModelVerify")
+	autoTransactionRecordConfirm := flag.Bool("autoTransactionRecordConfirm", false, "autoTransactionRecordConfirm")
 	messagingServerType := flag.String("messagingServerType", "http", "messagingServerType")
 	servers := flag.String("servers", "", "servers")
 	username := flag.String("username", "", "username")
@@ -172,16 +174,17 @@ func parseOptions() *Options {
 	serversArr := strings.Split(*servers, ",")
 
 	opt := &Options{
-		Host:                   *host,
-		TcpPort:                *tcpPort,
-		HttpPort:               *httpPort,
-		AutoVerification:       *autoVerification,
-		AutoHeartbeatResponse:  *autoHeartbeatResponse,
-		AutoBillingModelVerify: *autoBillingModelVerify,
-		MessagingServerType:    *messagingServerType,
-		Servers:                serversArr,
-		Username:               *username,
-		Password:               *password,
+		Host:                         *host,
+		TcpPort:                      *tcpPort,
+		HttpPort:                     *httpPort,
+		AutoVerification:             *autoVerification,
+		AutoHeartbeatResponse:        *autoHeartbeatResponse,
+		AutoBillingModelVerify:       *autoBillingModelVerify,
+		AutoTransactionRecordConfirm: *autoTransactionRecordConfirm,
+		MessagingServerType:          *messagingServerType,
+		Servers:                      serversArr,
+		Username:                     *username,
+		Password:                     *password,
 	}
 	return opt
 }

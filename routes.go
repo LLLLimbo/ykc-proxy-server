@@ -201,12 +201,38 @@ func RemoteShutdownRequestRouter(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "done"})
 }
 
+func TransactionRecordConfirmedRouter(c *gin.Context) {
+	var req TransactionRecordConfirmedMessage
+	if c.ShouldBind(&req) == nil {
+		err := SendTransactionRecordConfirmed(&req)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "done"})
+}
+
 func TransactionRecordMessageRouter(opt *Options, raw []byte, hex []string, header *Header) {
 	msg := PackTransactionRecordMessage(raw, hex, header)
 	msgJson, _ := json.Marshal(msg)
 	log.WithFields(log.Fields{
 		"msg": string(msgJson),
 	}).Debug("[3b] TransactionRecord message")
+
+	if opt.AutoTransactionRecordConfirm {
+		m := &TransactionRecordConfirmedMessage{
+			Header: &Header{
+				Seq:       0,
+				Encrypted: false,
+			},
+			Id:       msg.Id,
+			TradeSeq: msg.TradeSeq,
+			Result:   0,
+		}
+		_ = SendTransactionRecordConfirmed(m)
+		return
+	}
 
 	//forward
 	if opt.MessageForwarder != nil {
