@@ -159,9 +159,9 @@ func drain(opt *Options, conn net.Conn) error {
 	case OfflineDataReport:
 		OfflineDataReportMessageRouter(opt, hex, header)
 	case RemoteBootstrapResponse:
-		RemoteBootstrapResponseRouter(hex, header)
+		RemoteBootstrapResponseRouter(opt, hex, header)
 	case RemoteShutdownResponse:
-		RemoteShutdownResponseRouter(hex, header)
+		RemoteShutdownResponseRouter(opt, hex, header)
 	case TransactionRecord:
 		TransactionRecordMessageRouter(opt, buf, hex, header)
 	default:

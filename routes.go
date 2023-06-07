@@ -138,7 +138,7 @@ func RemoteBootstrapRequestRouter(c *gin.Context) {
 	c.JSON(200, gin.H{"message": "done"})
 }
 
-func RemoteBootstrapResponseRouter(hex []string, header *Header) {
+func RemoteBootstrapResponseRouter(opt *Options, hex []string, header *Header) {
 	msg := PackRemoteBootstrapResponseMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":                    msg.Id,
@@ -147,6 +147,13 @@ func RemoteBootstrapResponseRouter(hex []string, header *Header) {
 		"result":                msg.Result,
 		"reason":                msg.Reason,
 	}).Debug("[33] RemoteBootstrapResponse message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("33", b)
+	}
 }
 
 func OfflineDataReportMessageRouter(opt *Options, hex []string, header *Header) {
@@ -179,7 +186,7 @@ func OfflineDataReportMessageRouter(opt *Options, hex []string, header *Header) 
 	}
 }
 
-func RemoteShutdownResponseRouter(hex []string, header *Header) {
+func RemoteShutdownResponseRouter(opt *Options, hex []string, header *Header) {
 	msg := PackRemoteShutdownResponseMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":     msg.Id,
@@ -187,6 +194,13 @@ func RemoteShutdownResponseRouter(hex []string, header *Header) {
 		"result": msg.Result,
 		"reason": msg.Reason,
 	}).Debug("[35] RemoteShutdownResponse message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("35", b)
+	}
 }
 
 func RemoteShutdownRequestRouter(c *gin.Context) {
