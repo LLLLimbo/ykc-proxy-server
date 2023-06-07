@@ -659,6 +659,7 @@ func PackTransactionRecordMessage(raw []byte, hex []string, header *Header) *Tra
 
 	//fill all fields
 	msg := &TransactionRecordMessage{
+		Header:                    header,
 		TradeSeq:                  tradeSeq,
 		Id:                        id,
 		GunId:                     gunId,
@@ -717,6 +718,33 @@ func PackTransactionRecordConfirmedMessage(msg *TransactionRecordConfirmedMessag
 	resp.Write([]byte(strconv.Itoa(msg.Result)))
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
 	return resp.Bytes()
+}
+
+type RemoteRebootResponseMessage struct {
+	Header *Header `json:"header"`
+	Id     string  `json:"id"`
+	Result int     `json:"result"`
+}
+
+func PackRemoteRebootResponseMessage(hex []string, header *Header) *RemoteRebootResponseMessage {
+	//id
+	id := ""
+	for _, v := range hex[6:13] {
+		id += v
+	}
+
+	//result 0-fail 1-success
+	result := 1
+	if hex[13] == "00" {
+		result = 0
+	}
+
+	msg := &RemoteRebootResponseMessage{
+		Header: header,
+		Id:     id,
+		Result: result,
+	}
+	return msg
 }
 
 type RemoteRebootRequestMessage struct {

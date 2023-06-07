@@ -163,6 +163,8 @@ func drain(opt *Options, conn net.Conn) error {
 		RemoteBootstrapResponseRouter(opt, hex, header)
 	case RemoteShutdownResponse:
 		RemoteShutdownResponseRouter(opt, hex, header)
+	case RemoteRebootResponse:
+		RemoteRebootResponseMessageRouter(opt, hex, header)
 	case TransactionRecord:
 		TransactionRecordMessageRouter(opt, buf, hex, header)
 	default:

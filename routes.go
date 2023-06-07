@@ -256,6 +256,21 @@ func TransactionRecordMessageRouter(opt *Options, raw []byte, hex []string, head
 	}
 }
 
+func RemoteRebootResponseMessageRouter(opt *Options, hex []string, header *Header) {
+	msg := PackRemoteRebootResponseMessage(hex, header)
+	log.WithFields(log.Fields{
+		"id":     msg.Id,
+		"result": msg.Result,
+	}).Debug("[91] RemoteRebootResponse message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("91", b)
+	}
+}
+
 func RemoteRebootRequestMessageRouter(c *gin.Context) {
 	var req RemoteRebootRequestMessage
 	if c.ShouldBind(&req) == nil {
