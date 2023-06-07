@@ -85,6 +85,7 @@ func enableHttpServer(opt *Options) {
 	r.POST("/proxy/34", RemoteBootstrapRequestRouter)
 	r.POST("/proxy/36", RemoteShutdownRequestRouter)
 	r.POST("/proxy/40", TransactionRecordConfirmedRouter)
+	r.POST("/proxy/92", RemoteRebootRequestMessageRouter)
 
 	host := opt.Host
 	port := strconv.Itoa(opt.HttpPort)

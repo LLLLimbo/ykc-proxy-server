@@ -85,3 +85,17 @@ func SendTransactionRecordConfirmed(req *TransactionRecordConfirmedMessage) erro
 	}).Debug("[40] TransactionRecordConfirmed message sent")
 	return nil
 }
+
+func SendRemoteRebootRequest(req *RemoteRebootRequestMessage) error {
+	c, err := GetClient(req.Id)
+	if err != nil {
+		return err
+	}
+	resp := PackRemoteRebootRequestMessage(req)
+	_, _ = c.Write(resp)
+	log.WithFields(log.Fields{
+		"id":      req.Id,
+		"request": BytesToHex(resp),
+	}).Debug("[92] RemoteRebootRequest message sent")
+	return nil
+}

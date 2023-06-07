@@ -59,7 +59,7 @@ const (
 	NtpRequest                       = byte(0x56)
 	SetBillingModelRequest           = byte(0x58)
 	UpDownFloorLock                  = byte(0x62)
-	RemoteResponse                   = byte(0x92)
+	RemoteRebootRequest              = byte(0x92)
 	OtaRequest                       = byte(0x94)
 )
 
@@ -715,6 +715,30 @@ func PackTransactionRecordConfirmedMessage(msg *TransactionRecordConfirmedMessag
 	resp.Write([]byte{0x40})
 	resp.Write(HexToBytes(msg.TradeSeq))
 	resp.Write([]byte(strconv.Itoa(msg.Result)))
+	resp.Write(ModbusCRC(resp.Bytes()[2:]))
+	return resp.Bytes()
+}
+
+type RemoteRebootRequestMessage struct {
+	Header  *Header `json:"header"`
+	Id      string  `json:"id"`
+	Control int     `json:"control"`
+}
+
+func PackRemoteRebootRequestMessage(msg *RemoteRebootRequestMessage) []byte {
+	var resp bytes.Buffer
+	resp.Write([]byte{0x68, 0x0c})
+	seqStr := fmt.Sprintf("%x", GenerateSeq())
+	seq := ConvertIntSeqToReversedHexArr(seqStr)
+	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
+	if msg.Header.Encrypted {
+		resp.WriteByte(0x01)
+	} else {
+		resp.WriteByte(0x00)
+	}
+	resp.Write([]byte{0x92})
+	resp.Write(HexToBytes(msg.Id))
+	resp.Write([]byte(strconv.Itoa(msg.Control)))
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
 	return resp.Bytes()
 }

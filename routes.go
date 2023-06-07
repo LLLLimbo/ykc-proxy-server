@@ -255,3 +255,15 @@ func TransactionRecordMessageRouter(opt *Options, raw []byte, hex []string, head
 		_ = opt.MessageForwarder.Publish("3b", b)
 	}
 }
+
+func RemoteRebootRequestMessageRouter(c *gin.Context) {
+	var req RemoteRebootRequestMessage
+	if c.ShouldBind(&req) == nil {
+		err := SendRemoteRebootRequest(&req)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "done"})
+}
