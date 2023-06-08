@@ -6,7 +6,7 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 
 ## Concept
 
-![concept](Readme.assets/concept.png)
+![concept](doc/concept.png)
 
 
 
