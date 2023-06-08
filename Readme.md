@@ -4,6 +4,12 @@ A self-hosted, lightweight implementation of a protocol server for cloud fast ch
 
 
 
+## Concept
+
+![concept](Readme.assets/concept.png)
+
+
+
 ## Quick Start
 
 You can find latest release [here](https://github.com/LLLLimbo/ykc-proxy-server/releases).
@@ -16,9 +22,47 @@ Run it with:
 
 
 
+### Flags
+
+There are some flags to customize server's behavior without having to write a configuration file.
+
+Example:
+
+```shell
+./ykc-proxy-server -servers 127.0.0.1:8080 -autoVerification true -autoBillingModelVerify true
+```
+
+
+
+supported server options:
+
+| Flag                           | Description                                                  | Default Value |
+| ------------------------------ | ------------------------------------------------------------ | ------------- |
+| `host`                         | host IP address                                              | 0.0.0.0       |
+| `tcpPort`                      | TCP server port                                              | 27600         |
+| `httpPort`                     | HTTP server port                                             | 9556          |
+| `autoVerification`             | if enabled, the proxy server will automatically pass after receiving the login authentication message(01) | false         |
+| `autoHeartbeatResponse`        | if  enabled, the proxy server will automatically answer the heartbeat message(03) when it receives it | true          |
+| `autoBillingModelVerify`       | if enabled, the proxy server will automatically pass after receiving the billing model verify message(05) | false         |
+| `autoTransactionRecordConfirm` | if enabled, the proxy server will automatically confirm the transaction record uploaded by device(3b) | false         |
+| `messagingServerType`          | if you need to push device messages to other systems, modify this argument to specify the protocol (currently only HTTP protocol is supported) | http          |
+| `servers`                      | push endpoint (if there is more than one, separate them with commas) |               |
+
+
+
+### Control device with REST API
+
+see API list here -> [REST API document](doc/restapi.md)
+
+
+
 ## Build it yourself
 
-
+```shell
+git clone https://github.com/LLLLimbo/ykc-proxy-server.git \
+&& cd ykc-proxy-server \
+&& go build .
+```
 
 
 
@@ -73,8 +117,8 @@ This is the current list of supported messages, you can find more detailed infor
 | 0x61     | 地锁数据上送（充电桩上送）    | 充电桩->运营平台 |                    |
 | 0x62     | 遥控地锁升锁与降锁命令(下行)  | 运营平台->充电桩 |                    |
 | 0x63     | 充电桩返回数据（上行）        | 充电桩->运营平台 |                    |
-| 0x91     | 远程重启应答                  | 充电桩->运营平台 |                    |
-| 0x92     | 远程重启                      | 运营平台->充电桩 |                    |
+| 0x91     | 远程重启应答                  | 充电桩->运营平台 | :white_check_mark: |
+| 0x92     | 远程重启                      | 运营平台->充电桩 | :white_check_mark: |
 | 0x93     | 远程更新应答                  | 充电桩->运营平台 |                    |
 | 0x94     | 远程更新                      | 运营平台->充电桩 |                    |
 | 0xA1     | 充电桩主动申请并充充电        | 充电桩->运营平台 |                    |
