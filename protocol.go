@@ -215,7 +215,7 @@ func PackBillingModelVerificationResponseMessage(msg *BillingModelVerificationRe
 
 type HeartbeatMessage struct {
 	Header    *Header `json:"header"`
-	Id        string  `json:"Id"`
+	Id        string  `json:"id"`
 	Gun       string  `json:"gun"`
 	GunStatus int     `json:"gunStatus"`
 }

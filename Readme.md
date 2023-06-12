@@ -68,9 +68,7 @@ git clone https://github.com/LLLLimbo/ykc-proxy-server.git \
 
 ## Currently supported messages
 
-This is the current list of supported messages, you can find more detailed information [here](doc/message.md)
-
-
+This is the current list of supported messages, you can find more detailed information [here](doc/messages.md)
 
 | 帧类型码 | 帧类型码名称                  | 数据传送方向     | 已支持             |
 | -------- | ----------------------------- | ---------------- | ------------------ |
