@@ -164,7 +164,7 @@ func parseOptions() *Options {
 	autoHeartbeatResponse := flag.Bool("autoHeartbeatResponse", true, "autoHeartbeatResponse")
 	autoBillingModelVerify := flag.Bool("autoBillingModelVerify", false, "autoBillingModelVerify")
 	autoTransactionRecordConfirm := flag.Bool("autoTransactionRecordConfirm", false, "autoTransactionRecordConfirm")
-	messagingServerType := flag.String("messagingServerType", "http", "messagingServerType")
+	messagingServerType := flag.String("messagingServerType", "", "messagingServerType")
 	servers := flag.String("servers", "", "servers")
 	username := flag.String("username", "", "username")
 	password := flag.String("password", "", "password")
