@@ -282,3 +282,30 @@ func RemoteRebootRequestMessageRouter(c *gin.Context) {
 	}
 	c.JSON(200, gin.H{"message": "done"})
 }
+
+func SetBillingModelRequestRouter(c *gin.Context) {
+	var req SetBillingModelRequestMessage
+	if c.ShouldBind(&req) == nil {
+		err := SendSetBillingModelRequestMessage(&req)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "done"})
+}
+
+func SetBillingModelResponseMessageRouter(opt *Options, hex []string, header *Header) {
+	msg := PackRemoteRebootResponseMessage(hex, header)
+	log.WithFields(log.Fields{
+		"id":     msg.Id,
+		"result": msg.Result,
+	}).Debug("[57] SetBillingModelResponse message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("57", b)
+	}
+}

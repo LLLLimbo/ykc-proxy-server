@@ -770,3 +770,78 @@ func PackRemoteRebootRequestMessage(msg *RemoteRebootRequestMessage) []byte {
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
 	return resp.Bytes()
 }
+
+type SetBillingModelRequestMessage struct {
+	Header           *Header `json:"header"`
+	Id               string  `json:"id"`
+	BillingModelCode string  `json:"billingModelCode"`
+	SharpUnitPrice   int     `json:"sharpUnitPrice"`
+	SharpServiceFee  int     `json:"sharpServiceFee"`
+	PeakUnitPrice    int     `json:"peakUnitPrice"`
+	PeakServiceFee   int     `json:"peakServiceFee"`
+	FlatUnitPrice    int     `json:"flatUnitPrice"`
+	FlatServiceFee   int     `json:"flatServiceFee"`
+	ValleyUnitPrice  int     `json:"valleyUnitPrice"`
+	ValleyServiceFee int     `json:"valleyServiceFee"`
+	AccrualRatio     int     `json:"accrualRatio"`
+	RateList         []int   `json:"rateList"`
+}
+
+func PackSetBillingModelRequestMessage(msg *SetBillingModelRequestMessage) []byte {
+	var resp bytes.Buffer
+	resp.Write([]byte{0x68, 0x5e})
+	seqStr := fmt.Sprintf("%x", GenerateSeq())
+	seq := ConvertIntSeqToReversedHexArr(seqStr)
+	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
+	if msg.Header.Encrypted {
+		resp.WriteByte(0x01)
+	} else {
+		resp.WriteByte(0x00)
+	}
+	resp.Write([]byte{0x58})
+	resp.Write(HexToBytes(msg.Id))
+	resp.Write(HexToBytes(msg.BillingModelCode))
+	resp.Write(IntToBytes(msg.SharpUnitPrice))
+	resp.Write(IntToBytes(msg.SharpServiceFee))
+	resp.Write(IntToBytes(msg.PeakUnitPrice))
+	resp.Write(IntToBytes(msg.PeakServiceFee))
+	resp.Write(IntToBytes(msg.FlatUnitPrice))
+	resp.Write(IntToBytes(msg.FlatServiceFee))
+	resp.Write(IntToBytes(msg.ValleyUnitPrice))
+	resp.Write(IntToBytes(msg.ValleyServiceFee))
+	resp.Write([]byte(strconv.Itoa(msg.AccrualRatio)))
+
+	for _, v := range msg.RateList {
+		resp.Write([]byte(strconv.Itoa(v)))
+	}
+
+	resp.Write(ModbusCRC(resp.Bytes()[2:]))
+	return resp.Bytes()
+}
+
+type SetBillingModelResponseMessage struct {
+	Header *Header `json:"header"`
+	Id     string  `json:"id"`
+	Result int     `json:"result"`
+}
+
+func PackSetBillingModelResponseMessage(hex []string, header *Header) *SetBillingModelResponseMessage {
+	//id
+	id := ""
+	for _, v := range hex[6:13] {
+		id += v
+	}
+
+	//result 0-fail 1-success
+	result := 1
+	if hex[13] == "00" {
+		result = 0
+	}
+
+	msg := &SetBillingModelResponseMessage{
+		Header: header,
+		Id:     id,
+		Result: result,
+	}
+	return msg
+}

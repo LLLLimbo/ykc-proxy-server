@@ -98,6 +98,18 @@
 
 
 
+### Set billing model response (57)
+
+| Field  | Type   | Description      |
+| ------ | ------ | ---------------- |
+| header | Header |                  |
+| id     | string | device id        |
+| result | int    | 0-fail 1-success |
+
+
+
+
+
 ### Remote reboot response (91)
 
 | Field  | Type   | Description      |

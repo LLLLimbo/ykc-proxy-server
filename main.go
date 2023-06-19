@@ -85,6 +85,7 @@ func enableHttpServer(opt *Options) {
 	r.POST("/proxy/34", RemoteBootstrapRequestRouter)
 	r.POST("/proxy/36", RemoteShutdownRequestRouter)
 	r.POST("/proxy/40", TransactionRecordConfirmedRouter)
+	r.POST("/proxy/58", SetBillingModelRequestRouter)
 	r.POST("/proxy/92", RemoteRebootRequestMessageRouter)
 
 	host := opt.Host
@@ -159,14 +160,22 @@ func drain(opt *Options, conn net.Conn) error {
 		break
 	case OfflineDataReport:
 		OfflineDataReportMessageRouter(opt, hex, header)
+		break
 	case RemoteBootstrapResponse:
 		RemoteBootstrapResponseRouter(opt, hex, header)
+		break
 	case RemoteShutdownResponse:
 		RemoteShutdownResponseRouter(opt, hex, header)
+		break
+	case SetBillingModelResponse:
+		SetBillingModelResponseMessageRouter(opt, hex, header)
+		break
 	case RemoteRebootResponse:
 		RemoteRebootResponseMessageRouter(opt, hex, header)
+		break
 	case TransactionRecord:
 		TransactionRecordMessageRouter(opt, buf, hex, header)
+		break
 	default:
 		break
 

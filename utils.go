@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -178,4 +179,13 @@ func Cp56time2aToUnixMilliseconds(cp56time2a []byte) int64 {
 	years := cp56time2a[6] & 0x7F
 	t := time.Date(int(years)+2000, time.Month(months), int(days), int(hours), int(minutes), 0, int(milliseconds)*1000, time.UTC)
 	return t.UnixNano() / int64(time.Millisecond)
+}
+
+func IntToBytes(v int) []byte {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.BigEndian, uint32(v))
+	if err != nil {
+		fmt.Println("binary.Write failed:", err)
+	}
+	return buf.Bytes()
 }
