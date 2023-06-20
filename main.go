@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -31,7 +32,12 @@ func main() {
 		opt.MessageForwarder = f
 		break
 	case "nats":
-		f := &NatsForwarder{}
+		servers := strings.Join(opt.Servers, ",")
+		f := &NatsForwarder{
+			Servers:  servers,
+			Username: opt.Username,
+			Password: opt.Password,
+		}
 		opt.MessageForwarder = f
 		break
 	default:

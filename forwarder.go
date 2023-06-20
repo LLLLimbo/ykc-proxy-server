@@ -2,11 +2,16 @@ package main
 
 import (
 	"github.com/go-resty/resty/v2"
+	"github.com/nats-io/nats.go"
 	"math/rand"
 	"strings"
 	"time"
 )
 import log "github.com/sirupsen/logrus"
+
+const (
+	NATS_PUBLISH_SUBJECT_PREFIX = "charge.proxy.ykc"
+)
 
 type MessageForwarder interface {
 	Connect() error
@@ -74,7 +79,10 @@ type RabbitForwarder struct {
 }
 
 type NatsForwarder struct {
-	// ...
+	Servers  string
+	Username string
+	Password string
+	nc       *nats.Conn
 }
 
 func (h *NatsForwarder) Subscribe(topic string, handler func(message []byte)) error {
@@ -83,15 +91,21 @@ func (h *NatsForwarder) Subscribe(topic string, handler func(message []byte)) er
 }
 
 func (h *NatsForwarder) Close() error {
-	//TODO implement me
-	panic("implement me")
+	h.nc.Close()
+	return nil
 }
 
 func (h *NatsForwarder) Connect() error {
-	//...
-	return nil
+	nc, err := nats.Connect(h.Servers, nats.UserInfo(h.Username, h.Password))
+	if err != nil {
+		log.Fatalf("can not connect to nats server, error: %s", err.Error())
+	}
+	h.nc = nc
+	return err
 }
 
 func (h *NatsForwarder) Publish(mid string, message []byte) error {
-	return nil
+	subject := NATS_PUBLISH_SUBJECT_PREFIX + "." + mid
+	err := h.nc.Publish(subject, message)
+	return err
 }

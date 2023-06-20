@@ -29,6 +29,7 @@ type Options struct {
 	Username                     string
 	Password                     string
 	MessageForwarder             MessageForwarder
+	PublishSubjectPrefix         string
 }
 
 type Server struct {
