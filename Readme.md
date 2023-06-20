@@ -71,7 +71,7 @@ Taking the login authentication message (01) as an example, the proxy service wi
 If you start server with:
 
 ```shell
-./ykc-proxy-server -servers nats://127.0.0.1:4222 -username user -password pwd
+./ykc-proxy-server -messagingServerType nats -servers nats://127.0.0.1:4222 -username user -password pwd
 ```
 
 The proxy server will forward the device messages to your NATS server. The proxy server will use `charge.proxy.ykc` as the subject's prefix.
