@@ -45,8 +45,38 @@ supported server options:
 | `autoHeartbeatResponse`        | if  enabled, the proxy server will automatically answer the heartbeat message(03) when it receives it | true          |
 | `autoBillingModelVerify`       | if enabled, the proxy server will automatically pass after receiving the billing model verify message(05) | false         |
 | `autoTransactionRecordConfirm` | if enabled, the proxy server will automatically confirm the transaction record uploaded by device(3b) | false         |
-| `messagingServerType`          | if you need to push device messages to other systems, modify this argument to specify the protocol (currently only HTTP protocol is supported) | http          |
+| `messagingServerType`          | if you need to push device messages to other systems, modify this argument to specify the protocol (currently only HTTP and NATS protocol are supported) | http          |
 | `servers`                      | push endpoint (if there is more than one, separate them with commas) |               |
+| `username`                     | username for message broker                                  |               |
+| `password`                     | password for message broker                                  |               |
+
+
+
+#### Forward device messages to HTTP endpoints
+
+If you start server with:
+
+```shell
+./ykc-proxy-server -servers 127.0.0.1:8080/charge/ykc/messages
+```
+
+The proxy server will forward the device messages to your endpoint. The proxy server will use your endpoint as prefix.
+
+Taking the login authentication message (01) as an example, the proxy service will forward the message to `http://127.0.0.1:8080/charge/ykc/messages/01`.
+
+
+
+#### Forward device messages to NATS
+
+If you start server with:
+
+```shell
+./ykc-proxy-server -servers nats://127.0.0.1:4222 -username user -password pwd
+```
+
+The proxy server will forward the device messages to your NATS server. The proxy server will use `charge.proxy.ykc` as the subject's prefix.
+
+Taking the login authentication message (01) as an example, the proxy service will forward the message to `charge.proxy.ykc.01`.
 
 
 
@@ -110,8 +140,8 @@ This is the current list of supported messages, you can find more detailed infor
 | 0x52     | 充电桩工作参数设置            | 运营平台->充电桩 |                    |
 | 0x55     | 对时设置应答                  | 充电桩->运营平台 |                    |
 | 0x56     | 对时设置                      | 运营平台->充电桩 |                    |
-| 0x57     | 计费模型应答                  | 充电桩->运营平台 |                    |
-| 0x58     | 计费模型设置                  | 运营平台->充电桩 |                    |
+| 0x57     | 计费模型应答                  | 充电桩->运营平台 | :white_check_mark: |
+| 0x58     | 计费模型设置                  | 运营平台->充电桩 | :white_check_mark: |
 | 0x61     | 地锁数据上送（充电桩上送）    | 充电桩->运营平台 |                    |
 | 0x62     | 遥控地锁升锁与降锁命令(下行)  | 运营平台->充电桩 |                    |
 | 0x63     | 充电桩返回数据（上行）        | 充电桩->运营平台 |                    |
@@ -125,5 +155,3 @@ This is the current list of supported messages, you can find more detailed infor
 | 0xA4     | 运营平台远程控制并充启机      | 充电桩->运营平台 |                    |
 
 
-
-## 
