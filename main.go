@@ -38,6 +38,7 @@ func main() {
 			Username: opt.Username,
 			Password: opt.Password,
 		}
+		f.Connect()
 		opt.MessageForwarder = f
 		break
 	default:
