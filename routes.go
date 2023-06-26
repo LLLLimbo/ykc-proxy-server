@@ -73,7 +73,6 @@ func HeartbeatRouter(opt *Options, hex []string, header *Header, conn net.Conn) 
 			Gun:      msg.Gun,
 			Response: 0,
 		})
-		return
 	}
 
 	//forward

@@ -184,6 +184,9 @@ func drain(opt *Options, conn net.Conn) error {
 		TransactionRecordMessageRouter(opt, buf, hex, header)
 		break
 	default:
+		log.WithFields(log.Fields{
+			"frame_id": int(buf[5]),
+		}).Info("unsupported message")
 		break
 
 	}
