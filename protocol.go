@@ -340,7 +340,7 @@ func PackRemoteBootstrapResponseMessage(hex []string, header *Header) *RemoteBoo
 	}
 
 	//fail reason
-	reason, _ := strconv.ParseInt(hex[14], 16, 64)
+	reason, _ := strconv.ParseInt(hex[31], 16, 64)
 
 	msg := &RemoteBootstrapResponseMessage{
 		Header:   header,
@@ -842,6 +842,65 @@ func PackSetBillingModelResponseMessage(hex []string, header *Header) *SetBillin
 		Header: header,
 		Id:     id,
 		Result: result,
+	}
+	return msg
+}
+
+type ChargingFinishedMessage struct {
+	Header                           *Header `json:"header"`
+	TradeSeq                         string  `json:"tradeSeq"`
+	Id                               string  `json:"id"`
+	GunId                            string  `json:"gunId"`
+	BmsSoc                           int     `json:"bmsSoc"`
+	BmsBatteryPackLowestVoltage      int     `json:"bmsBatteryPackLowestVoltage"`
+	BmsBatteryPackHighestVoltage     int     `json:"bmsBatteryPackHighestVoltage"`
+	BmsBatteryPackLowestTemperature  int     `json:"bmsBatteryPackLowestTemperature"`
+	BmsBatteryPackHighestTemperature int     `json:"bmsBatteryPackHighestTemperature"`
+	CumulativeChargingDuration       int     `json:"cumulativeChargingDuration"`
+	OutputPower                      int     `json:"outputPower"`
+	ChargingUnitId                   int     `json:"chargingUnitId"`
+}
+
+func PackChargingFinishedMessage(hex []string, header *Header) *ChargingFinishedMessage {
+	//trade sequence number
+	tradeSeq := ""
+	for _, v := range hex[6:22] {
+		tradeSeq += v
+	}
+
+	//id
+	id := ""
+	for _, v := range hex[22:29] {
+		id += v
+	}
+
+	//gun id
+	gunId := hex[29]
+
+	//soc
+	soc, _ := strconv.ParseInt(hex[30], 16, 64)
+
+	bmsBatteryPackLowestVoltage, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[31:33]), 16, 64)
+	bmsBatteryPackHighestVoltage, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[33:35]), 16, 64)
+	bmsBatteryPackLowestTemperature, _ := strconv.ParseInt(hex[35], 16, 64)
+	bmsBatteryPackHighestTemperature, _ := strconv.ParseInt(hex[36], 16, 64)
+	cumulativeChargingDuration, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[37:39]), 16, 64)
+	outputPower, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[39:41]), 16, 64)
+	chargingUnitId, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[41:45]), 16, 64)
+
+	msg := &ChargingFinishedMessage{
+		Header:                           header,
+		TradeSeq:                         tradeSeq,
+		Id:                               id,
+		GunId:                            gunId,
+		BmsSoc:                           int(soc),
+		BmsBatteryPackLowestVoltage:      int(bmsBatteryPackLowestVoltage),
+		BmsBatteryPackHighestVoltage:     int(bmsBatteryPackHighestVoltage),
+		BmsBatteryPackLowestTemperature:  int(bmsBatteryPackLowestTemperature),
+		BmsBatteryPackHighestTemperature: int(bmsBatteryPackHighestTemperature),
+		CumulativeChargingDuration:       int(cumulativeChargingDuration),
+		OutputPower:                      int(outputPower),
+		ChargingUnitId:                   int(chargingUnitId),
 	}
 	return msg
 }

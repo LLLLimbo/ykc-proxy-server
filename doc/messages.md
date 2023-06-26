@@ -67,6 +67,23 @@
 
 
 
+### Charging finished (19)
+
+| Field                            | Type   | Description           |
+| -------------------------------- | ------ | --------------------- |
+| header                           | Header |                       |
+| tradeSeq                         | string | trade sequence number |
+| id                               | string | device id             |
+| gunId                            | string | gun id                |
+| bmsSoc                           | int    |                       |
+| bmsBatteryPackLowestVoltage      | int    |                       |
+| bmsBatteryPackHighestVoltage     | int    |                       |
+| bmsBatteryPackLowestTemperature  | int    |                       |
+| bmsBatteryPackHighestTemperature | int    |                       |
+| cumulativeChargingDuration       | int    |                       |
+| outputPower                      | int    |                       |
+| chargingUnitId                   | int    |                       |
+
 
 
 ### Remote bootstrap response (33)

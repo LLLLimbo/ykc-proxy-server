@@ -295,7 +295,7 @@ func SetBillingModelRequestRouter(c *gin.Context) {
 }
 
 func SetBillingModelResponseMessageRouter(opt *Options, hex []string, header *Header) {
-	msg := PackRemoteRebootResponseMessage(hex, header)
+	msg := PackSetBillingModelResponseMessage(hex, header)
 	log.WithFields(log.Fields{
 		"id":     msg.Id,
 		"result": msg.Result,
@@ -306,5 +306,19 @@ func SetBillingModelResponseMessageRouter(opt *Options, hex []string, header *He
 		//convert msg to json string bytes
 		b, _ := json.Marshal(msg)
 		_ = opt.MessageForwarder.Publish("57", b)
+	}
+}
+
+func ChargingFinishedMessageRouter(opt *Options, hex []string, header *Header) {
+	msg := PackChargingFinishedMessage(hex, header)
+	log.WithFields(log.Fields{
+		"id": msg.Id,
+	}).Debug("[19] ChargingFinished message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("19", b)
 	}
 }

@@ -114,7 +114,7 @@ This is the current list of supported messages, you can find more detailed infor
 | 0x13     | 离线监测数据                  | 充电桩->运营平台 | :white_check_mark: |
 | 0x15     | 充电握手                      | 充电桩->运营平台 |                    |
 | 0x17     | 参数配置                      | 充电桩->运营平台 |                    |
-| 0x19     | 充电结束                      | 充电桩->运营平台 |                    |
+| 0x19     | 充电结束                      | 充电桩->运营平台 | :white_check_mark: |
 | 0x1B     | 错误报文                      | 充电桩->运营平台 |                    |
 | 0x1D     | 充电阶段 BMS 中止             | 充电桩->运营平台 |                    |
 | 0x21     | 充电阶段充电机中止            | 充电桩->运营平台 |                    |

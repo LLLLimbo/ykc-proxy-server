@@ -168,6 +168,9 @@ func drain(opt *Options, conn net.Conn) error {
 	case OfflineDataReport:
 		OfflineDataReportMessageRouter(opt, hex, header)
 		break
+	case ChargingFinished:
+		ChargingFinishedMessageRouter(opt, hex, header)
+		break
 	case RemoteBootstrapResponse:
 		RemoteBootstrapResponseRouter(opt, hex, header)
 		break
