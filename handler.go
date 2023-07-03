@@ -8,7 +8,10 @@ func ResponseToBillingModelVerification(req *BillingModelVerificationResponseMes
 		return err
 	}
 	resp := PackBillingModelVerificationResponseMessage(req)
-	_, _ = c.Write(resp)
+	_, err = c.Write(resp)
+	if err != nil {
+		return err
+	}
 	log.WithFields(log.Fields{
 		"id":       req.Id,
 		"response": BytesToHex(resp),

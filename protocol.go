@@ -189,7 +189,7 @@ type BillingModelVerificationResponseMessage struct {
 
 func PackBillingModelVerificationResponseMessage(msg *BillingModelVerificationResponseMessage) []byte {
 	var resp bytes.Buffer
-	resp.Write(HexToBytes("680e"))
+	resp.Write([]byte{StartFlag, 0x0e})
 
 	seqStr := fmt.Sprintf("%x", msg.Header.Seq)
 	seq := ConvertIntSeqToReversedHexArr(seqStr)
@@ -200,15 +200,15 @@ func PackBillingModelVerificationResponseMessage(msg *BillingModelVerificationRe
 		encrypted = byte(0x01)
 	}
 	resp.Write([]byte{encrypted})
-	resp.Write(HexToBytes("06"))
+	resp.Write([]byte{BillingModelVerificationResponse})
 	resp.Write(HexToBytes(msg.Id))
 	resp.Write(HexToBytes(msg.BillingModelCode))
 
-	result := "01"
+	result := byte(0x01)
 	if msg.Result {
-		result = "00"
+		result = byte(0x00)
 	}
-	resp.Write(HexToBytes(result))
+	resp.Write([]byte{result})
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
 	return resp.Bytes()
 }
