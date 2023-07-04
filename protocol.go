@@ -15,7 +15,7 @@ const (
 	Verification                = byte(0x01)
 	Heartbeat                   = byte(0x03)
 	BillingModelVerification    = byte(0x05)
-	BillingModelRequest         = byte(0x08)
+	BillingModelRequest         = byte(0x09)
 	OfflineDataReport           = byte(0x13)
 	ChargingHandshake           = byte(0x15)
 	Configuration               = byte(0x17)
@@ -178,6 +178,73 @@ func PackBillingModelVerificationMessage(hex []string, header *Header) *BillingM
 		BillingModelCode: bmcode,
 	}
 	return msg
+}
+
+type BillingModelRequestMessage struct {
+	Header *Header `json:"header"`
+	Id     string  `json:"Id"`
+}
+
+func PackBillingModelRequestMessage(hex []string, header *Header) *BillingModelRequestMessage {
+	//Id
+	id := ""
+	for _, v := range hex[6:13] {
+		id += v
+	}
+
+	msg := &BillingModelRequestMessage{
+		Header: header,
+		Id:     id,
+	}
+	return msg
+}
+
+type BillingModelResponseMessage struct {
+	Header           *Header `json:"header"`
+	Id               string  `json:"id"`
+	BillingModelCode string  `json:"billingModelCode"`
+	SharpUnitPrice   int     `json:"sharpUnitPrice"`
+	SharpServiceFee  int     `json:"sharpServiceFee"`
+	PeakUnitPrice    int     `json:"peakUnitPrice"`
+	PeakServiceFee   int     `json:"peakServiceFee"`
+	FlatUnitPrice    int     `json:"flatUnitPrice"`
+	FlatServiceFee   int     `json:"flatServiceFee"`
+	ValleyUnitPrice  int     `json:"valleyUnitPrice"`
+	ValleyServiceFee int     `json:"valleyServiceFee"`
+	AccrualRatio     int     `json:"accrualRatio"`
+	RateList         []int   `json:"rateList"`
+}
+
+func PackBillingModelResponseMessage(msg *BillingModelResponseMessage) []byte {
+	var resp bytes.Buffer
+	resp.Write([]byte{0x68, 0x5e})
+	seqStr := fmt.Sprintf("%x", GenerateSeq())
+	seq := ConvertIntSeqToReversedHexArr(seqStr)
+	resp.Write(HexToBytes(MakeHexStringFromHexArray(seq)))
+	if msg.Header.Encrypted {
+		resp.WriteByte(0x01)
+	} else {
+		resp.WriteByte(0x00)
+	}
+	resp.Write([]byte{0x0a})
+	resp.Write(HexToBytes(msg.Id))
+	resp.Write(HexToBytes(msg.BillingModelCode))
+	resp.Write(IntToBytes(msg.SharpUnitPrice))
+	resp.Write(IntToBytes(msg.SharpServiceFee))
+	resp.Write(IntToBytes(msg.PeakUnitPrice))
+	resp.Write(IntToBytes(msg.PeakServiceFee))
+	resp.Write(IntToBytes(msg.FlatUnitPrice))
+	resp.Write(IntToBytes(msg.FlatServiceFee))
+	resp.Write(IntToBytes(msg.ValleyUnitPrice))
+	resp.Write(IntToBytes(msg.ValleyServiceFee))
+	resp.Write([]byte(strconv.Itoa(msg.AccrualRatio)))
+
+	for _, v := range msg.RateList {
+		resp.Write(IntToBytes(v))
+	}
+
+	resp.Write(ModbusCRC(resp.Bytes()[2:]))
+	return resp.Bytes()
 }
 
 type BillingModelVerificationResponseMessage struct {
@@ -812,7 +879,7 @@ func PackSetBillingModelRequestMessage(msg *SetBillingModelRequestMessage) []byt
 	resp.Write([]byte(strconv.Itoa(msg.AccrualRatio)))
 
 	for _, v := range msg.RateList {
-		resp.Write([]byte(strconv.Itoa(v)))
+		resp.Write(IntToBytes(v))
 	}
 
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))

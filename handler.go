@@ -116,3 +116,17 @@ func SendSetBillingModelRequestMessage(req *SetBillingModelRequestMessage) error
 	}).Debug("[58] SetBillingModelRequest message sent")
 	return nil
 }
+
+func SendBillingModelResponseMessage(req *BillingModelResponseMessage) error {
+	c, err := GetClient(req.Id)
+	if err != nil {
+		return err
+	}
+	resp := PackBillingModelResponseMessage(req)
+	_, _ = c.Write(resp)
+	log.WithFields(log.Fields{
+		"id":      req.Id,
+		"request": BytesToHex(resp),
+	}).Debug("[0a] BillingModelResponse message sent")
+	return nil
+}

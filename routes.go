@@ -88,7 +88,7 @@ func BillingModelVerificationRouter(opt *Options, hex []string, header *Header, 
 	log.WithFields(log.Fields{
 		"id":                 msg.Id,
 		"billing_model_code": msg.BillingModelCode,
-	}).Debug("[05] BillingModelRequest message")
+	}).Debug("[05] BillingModelVerification message")
 
 	//auto response
 	if opt.AutoBillingModelVerify {
@@ -111,6 +111,32 @@ func BillingModelVerificationRouter(opt *Options, hex []string, header *Header, 
 		b, _ := json.Marshal(msg)
 		_ = opt.MessageForwarder.Publish("05", b)
 	}
+}
+
+func BillingModelRequestMessageRouter(opt *Options, hex []string, header *Header, conn net.Conn) {
+	msg := PackBillingModelRequestMessage(hex, header)
+	log.WithFields(log.Fields{
+		"id": msg.Id,
+	}).Debug("[09] BillingModelRequest message")
+
+	//forward
+	if opt.MessageForwarder != nil {
+		//convert msg to json string bytes
+		b, _ := json.Marshal(msg)
+		_ = opt.MessageForwarder.Publish("09", b)
+	}
+}
+
+func BillingModelResponseMessageRouter(c *gin.Context) {
+	var req BillingModelResponseMessage
+	if c.ShouldBind(&req) == nil {
+		err := SendBillingModelResponseMessage(&req)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err})
+			return
+		}
+	}
+	c.JSON(200, gin.H{"message": "done"})
 }
 
 func BillingModelVerificationResponseRouter(c *gin.Context) {

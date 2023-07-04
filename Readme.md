@@ -108,8 +108,8 @@ This is the current list of supported messages, you can find more detailed infor
 | 0x04     | 心跳包应答                    | 运营平台->充电桩 | :white_check_mark: |
 | 0x05     | 计费模型验证请求              | 充电桩->运营平台 | :white_check_mark: |
 | 0x06     | 计费模型验证请求应答          | 运营平台->充电桩 | :white_check_mark: |
-| 0x09     | 充电桩计费模型请求            | 充电桩->运营平台 |                    |
-| 0x0A     | 计费模型请求应答              | 运营平台->充电桩 |                    |
+| 0x09     | 充电桩计费模型请求            | 充电桩->运营平台 | :white_check_mark: |
+| 0x0A     | 计费模型请求应答              | 运营平台->充电桩 | :white_check_mark: |
 | 0x12     | 读取实时监测数据              | 运营平台->充电桩 |                    |
 | 0x13     | 离线监测数据                  | 充电桩->运营平台 | :white_check_mark: |
 | 0x15     | 充电握手                      | 充电桩->运营平台 |                    |
@@ -153,5 +153,4 @@ This is the current list of supported messages, you can find more detailed infor
 | 0xA2     | 运营平台确认并充启动充电      | 运营平台->充电桩 |                    |
 | 0xA3     | 远程并充启机命令回复          | 运营平台->充电桩 |                    |
 | 0xA4     | 运营平台远程控制并充启机      | 充电桩->运营平台 |                    |
-
 

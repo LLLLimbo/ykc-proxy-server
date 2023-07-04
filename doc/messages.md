@@ -41,6 +41,15 @@
 
 
 
+### Billing model request (09)
+
+| Field  | Type   | Description |
+| ------ | ------ | ----------- |
+| header | Header |             |
+| id     | string | device id   |
+
+
+
 ### Offline data report (13)
 
 | Field                   | Type   | Description                                          |

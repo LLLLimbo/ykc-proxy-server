@@ -89,6 +89,7 @@ func enableHttpServer(opt *Options) {
 	r := gin.Default()
 	r.POST("/proxy/02", VerificationResponseRouter)
 	r.POST("/proxy/06", BillingModelVerificationResponseRouter)
+	r.POST("/proxy/0a", BillingModelResponseMessageRouter)
 	r.POST("/proxy/34", RemoteBootstrapRequestRouter)
 	r.POST("/proxy/36", RemoteShutdownRequestRouter)
 	r.POST("/proxy/40", TransactionRecordConfirmedRouter)
@@ -164,6 +165,9 @@ func drain(opt *Options, conn net.Conn) error {
 		break
 	case BillingModelVerification:
 		BillingModelVerificationRouter(opt, hex, header, conn)
+		break
+	case BillingModelRequest:
+		BillingModelRequestMessageRouter(opt, hex, header, conn)
 		break
 	case OfflineDataReport:
 		OfflineDataReportMessageRouter(opt, hex, header)
