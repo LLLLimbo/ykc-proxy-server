@@ -170,7 +170,7 @@ func drain(opt *Options, conn net.Conn) error {
 		BillingModelRequestMessageRouter(opt, hex, header, conn)
 		break
 	case OfflineDataReport:
-		OfflineDataReportMessageRouter(opt, hex, header)
+		OfflineDataReportMessageRouter(opt, buf, hex, header)
 		break
 	case ChargingFinished:
 		ChargingFinishedMessageRouter(opt, hex, header)

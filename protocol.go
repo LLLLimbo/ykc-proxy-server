@@ -229,18 +229,18 @@ func PackBillingModelResponseMessage(msg *BillingModelResponseMessage) []byte {
 	resp.Write([]byte{0x0a})
 	resp.Write(HexToBytes(msg.Id))
 	resp.Write(HexToBytes(msg.BillingModelCode))
-	resp.Write(IntToBytes(msg.SharpUnitPrice))
-	resp.Write(IntToBytes(msg.SharpServiceFee))
-	resp.Write(IntToBytes(msg.PeakUnitPrice))
-	resp.Write(IntToBytes(msg.PeakServiceFee))
-	resp.Write(IntToBytes(msg.FlatUnitPrice))
-	resp.Write(IntToBytes(msg.FlatServiceFee))
-	resp.Write(IntToBytes(msg.ValleyUnitPrice))
-	resp.Write(IntToBytes(msg.ValleyServiceFee))
+	resp.Write(IntToBIN(msg.SharpUnitPrice, 4))
+	resp.Write(IntToBIN(msg.SharpServiceFee, 4))
+	resp.Write(IntToBIN(msg.PeakUnitPrice, 4))
+	resp.Write(IntToBIN(msg.PeakServiceFee, 4))
+	resp.Write(IntToBIN(msg.FlatUnitPrice, 4))
+	resp.Write(IntToBIN(msg.FlatServiceFee, 4))
+	resp.Write(IntToBIN(msg.ValleyUnitPrice, 4))
+	resp.Write(IntToBIN(msg.ValleyServiceFee, 4))
 	resp.Write([]byte(strconv.Itoa(msg.AccrualRatio)))
 
 	for _, v := range msg.RateList {
-		resp.Write(IntToBytes(v))
+		resp.Write(IntToBIN(v, 1))
 	}
 
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))
@@ -442,7 +442,7 @@ type OfflineDataReportMessage struct {
 	HardwareFailure         int     `json:"hardwareFailure"`
 }
 
-func PackOfflineDataReportMessage(hex []string, header *Header) *OfflineDataReportMessage {
+func PackOfflineDataReportMessage(hex []string, raw []byte, header *Header) *OfflineDataReportMessage {
 	//trade sequence number
 	tradeSeq := ""
 	for _, v := range hex[6:22] {
@@ -459,70 +459,70 @@ func PackOfflineDataReportMessage(hex []string, header *Header) *OfflineDataRepo
 	gunId := hex[29]
 
 	//status
-	status, _ := strconv.ParseInt(hex[30], 16, 64)
+	status := BINToInt([]byte{raw[30]})
 
 	//reset
-	reset, _ := strconv.ParseInt(hex[31], 16, 64)
+	reset := BINToInt([]byte{raw[31]})
 
 	//plugged
-	plugged, _ := strconv.ParseInt(hex[32], 16, 64)
+	plugged := BINToInt([]byte{raw[32]})
 
 	//ov
-	ov, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[33:35]), 16, 64)
+	ov := BINToInt(raw[33:35])
 
 	//oc
-	oc, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[35:37]), 16, 64)
+	oc := BINToInt(raw[35:37])
 
 	//lineTemp
-	lineTemp, _ := strconv.ParseInt(hex[37], 16, 64)
+	lineTemp := BINToInt([]byte{raw[37]})
 
 	//lineCode
-	lineCode := MakeHexStringFromHexArray(hex[38:46])
+	lineCode := BINToInt(raw[38:46])
 
 	//soc
-	soc, _ := strconv.ParseInt(hex[46], 16, 64)
+	soc := BINToInt([]byte{raw[46]})
 
 	//bpTopTemp
-	bpTopTemp, _ := strconv.ParseInt(hex[47], 16, 64)
+	bpTopTemp := BINToInt([]byte{raw[47]})
 
 	//accumulatedChargingTime
-	accumulatedChargingTime, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[48:50]), 16, 64)
+	accumulatedChargingTime := BINToInt(raw[48:50])
 
 	//remainingTime
-	remainingTime, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[50:52]), 16, 64)
+	remainingTime := BINToInt(raw[50:52])
 
 	//chargingDegrees
-	chargingDegrees, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[52:56]), 16, 64)
+	chargingDegrees := BINToInt(raw[52:56])
 
 	//lossyChargingDegrees
-	lossyChargingDegrees, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[56:60]), 16, 64)
+	lossyChargingDegrees := BINToInt(raw[56:60])
 
 	//chargedAmount
-	chargedAmount, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[60:64]), 16, 64)
+	chargedAmount := BINToInt(raw[60:64])
 
 	//hardwareFailure
-	hardwareFailure, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[64:66]), 16, 64)
+	hardwareFailure := BINToInt(raw[64:66])
 
 	msg := &OfflineDataReportMessage{
 		Header:                  header,
 		TradeSeq:                tradeSeq,
 		Id:                      id,
 		GunId:                   gunId,
-		Status:                  int(status),
-		Reset:                   int(reset),
-		Plugged:                 int(plugged),
-		Ov:                      int(ov),
-		Oc:                      int(oc),
-		LineTemp:                int(lineTemp),
-		LineCode:                lineCode,
-		Soc:                     int(soc),
-		BpTopTemp:               int(bpTopTemp),
-		AccumulatedChargingTime: int(accumulatedChargingTime),
-		RemainingTime:           int(remainingTime),
-		ChargingDegrees:         int(chargingDegrees),
-		LossyChargingDegrees:    int(lossyChargingDegrees),
-		ChargedAmount:           int(chargedAmount),
-		HardwareFailure:         int(hardwareFailure),
+		Status:                  status,
+		Reset:                   reset,
+		Plugged:                 plugged,
+		Ov:                      ov,
+		Oc:                      oc,
+		LineTemp:                lineTemp,
+		LineCode:                strconv.Itoa(lineCode),
+		Soc:                     soc,
+		BpTopTemp:               bpTopTemp,
+		AccumulatedChargingTime: accumulatedChargingTime,
+		RemainingTime:           remainingTime,
+		ChargingDegrees:         chargingDegrees,
+		LossyChargingDegrees:    lossyChargingDegrees,
+		ChargedAmount:           chargedAmount,
+		HardwareFailure:         hardwareFailure,
 	}
 
 	return msg
@@ -647,79 +647,79 @@ func PackTransactionRecordMessage(raw []byte, hex []string, header *Header) *Tra
 	endAt := Cp56time2aToUnixMilliseconds(raw[37:44])
 
 	//sharp unit price
-	sharpUnitPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[44:48]), 16, 64)
+	sharpUnitPrice := BINToInt(raw[44:48])
 
 	//sharp electric charge
-	sharpElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[48:52]), 16, 64)
+	sharpElectricCharge := BINToInt(raw[48:52])
 
 	//lossy sharp electric charge
-	lossySharpElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[52:56]), 16, 64)
+	lossySharpElectricCharge := BINToInt(raw[52:56])
 
 	//sharp price
-	sharpPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[56:60]), 16, 64)
+	sharpPrice := BINToInt(raw[56:60])
 
 	//peak unit price
-	peakUnitPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[60:64]), 16, 64)
+	peakUnitPrice := BINToInt(raw[60:64])
 
 	//peak electric charge
-	peakElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[64:68]), 16, 64)
+	peakElectricCharge := BINToInt(raw[64:68])
 
 	//lossy peak electric charge
-	lossyPeakElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[68:72]), 16, 64)
+	lossyPeakElectricCharge := BINToInt(raw[68:72])
 
 	//peak price
-	peakPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[72:76]), 16, 64)
+	peakPrice := BINToInt(raw[72:76])
 
 	//flat unit price
-	flatUnitPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[76:80]), 16, 64)
+	flatUnitPrice := BINToInt(raw[76:80])
 
 	//flat electric charge
-	flatElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[80:84]), 16, 64)
+	flatElectricCharge := BINToInt(raw[80:84])
 
 	//lossy flat electric charge
-	lossyFlatElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[84:88]), 16, 64)
+	lossyFlatElectricCharge := BINToInt(raw[84:88])
 
 	//flat price
-	flatPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[88:92]), 16, 64)
+	flatPrice := BINToInt(raw[88:92])
 
 	//valley unit price
-	valleyUnitPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[92:96]), 16, 64)
+	valleyUnitPrice := BINToInt(raw[92:96])
 
 	//valley electric charge
-	valleyElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[96:100]), 16, 64)
+	valleyElectricCharge := BINToInt(raw[96:100])
 
 	//lossy valley electric charge
-	lossyValleyElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[100:104]), 16, 64)
+	lossyValleyElectricCharge := BINToInt(raw[100:104])
 
 	//valley price
-	valleyPrice, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[104:108]), 16, 64)
+	valleyPrice := BINToInt(raw[104:108])
 
 	//initial meter reading
-	initialMeterReading, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[108:113]), 16, 64)
+	initialMeterReading := BINToInt(raw[108:113])
 
 	//final meter reading
-	finalMeterReading, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[113:118]), 16, 64)
+	finalMeterReading := BINToInt(raw[113:118])
 
 	//total electric charge
-	totalElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[118:122]), 16, 64)
+	totalElectricCharge := BINToInt(raw[118:122])
 
 	//lossy total electric charge
-	lossyTotalElectricCharge, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[122:126]), 16, 64)
+	lossyTotalElectricCharge := BINToInt(raw[122:126])
 
 	//consumption amount
-	consumptionAmount, _ := strconv.ParseInt(MakeHexStringFromHexArray(hex[126:130]), 16, 64)
+	consumptionAmount := BINToInt(raw[126:130])
 
 	//vin
 	vin := MakeHexStringFromHexArray(hex[130:147])
 
 	//start type
-	startType, _ := strconv.ParseInt(hex[147], 16, 64)
+	startType := BINToInt([]byte{raw[147]})
 
 	//transaction date time
 	transactionDateTime := Cp56time2aToUnixMilliseconds(raw[148:155])
 
 	//stop reason
-	stopReason, _ := strconv.ParseInt(hex[155], 16, 64)
+	stopReason := BINToInt([]byte{raw[155]})
 
 	//physical card number
 	physicalCardNumber := MakeHexStringFromHexArray(hex[156:164])
@@ -732,31 +732,31 @@ func PackTransactionRecordMessage(raw []byte, hex []string, header *Header) *Tra
 		GunId:                     gunId,
 		StartAt:                   startAt,
 		EndAt:                     endAt,
-		SharpUnitPrice:            sharpUnitPrice,
-		SharpElectricCharge:       sharpElectricCharge,
-		LossySharpElectricCharge:  lossySharpElectricCharge,
-		SharpPrice:                sharpPrice,
-		PeakUnitPrice:             peakUnitPrice,
-		PeakElectricCharge:        peakElectricCharge,
-		LossyPeakElectricCharge:   lossyPeakElectricCharge,
-		PeakPrice:                 peakPrice,
-		FlatUnitPrice:             flatUnitPrice,
-		FlatElectricCharge:        flatElectricCharge,
-		LossyFlatElectricCharge:   lossyFlatElectricCharge,
-		FlatPrice:                 flatPrice,
-		ValleyUnitPrice:           valleyUnitPrice,
-		ValleyElectricCharge:      valleyElectricCharge,
-		LossyValleyElectricCharge: lossyValleyElectricCharge,
-		ValleyPrice:               valleyPrice,
-		InitialMeterReading:       initialMeterReading,
-		FinalMeterReading:         finalMeterReading,
-		TotalElectricCharge:       totalElectricCharge,
-		LossyTotalElectricCharge:  lossyTotalElectricCharge,
-		ConsumptionAmount:         consumptionAmount,
+		SharpUnitPrice:            int64(sharpUnitPrice),
+		SharpElectricCharge:       int64(sharpElectricCharge),
+		LossySharpElectricCharge:  int64(lossySharpElectricCharge),
+		SharpPrice:                int64(sharpPrice),
+		PeakUnitPrice:             int64(peakUnitPrice),
+		PeakElectricCharge:        int64(peakElectricCharge),
+		LossyPeakElectricCharge:   int64(lossyPeakElectricCharge),
+		PeakPrice:                 int64(peakPrice),
+		FlatUnitPrice:             int64(flatUnitPrice),
+		FlatElectricCharge:        int64(flatElectricCharge),
+		LossyFlatElectricCharge:   int64(lossyFlatElectricCharge),
+		FlatPrice:                 int64(flatPrice),
+		ValleyUnitPrice:           int64(valleyUnitPrice),
+		ValleyElectricCharge:      int64(valleyElectricCharge),
+		LossyValleyElectricCharge: int64(lossyValleyElectricCharge),
+		ValleyPrice:               int64(valleyPrice),
+		InitialMeterReading:       int64(initialMeterReading),
+		FinalMeterReading:         int64(finalMeterReading),
+		TotalElectricCharge:       int64(totalElectricCharge),
+		LossyTotalElectricCharge:  int64(lossyTotalElectricCharge),
+		ConsumptionAmount:         int64(consumptionAmount),
 		Vin:                       vin,
-		StartType:                 int(startType),
+		StartType:                 startType,
 		TransactionDateTime:       transactionDateTime,
-		StopReason:                int(stopReason),
+		StopReason:                stopReason,
 		PhysicalCardNumber:        physicalCardNumber,
 	}
 	return msg
@@ -865,21 +865,21 @@ func PackSetBillingModelRequestMessage(msg *SetBillingModelRequestMessage) []byt
 	} else {
 		resp.WriteByte(0x00)
 	}
-	resp.Write([]byte{0x58})
+	resp.Write([]byte{0x0a})
 	resp.Write(HexToBytes(msg.Id))
 	resp.Write(HexToBytes(msg.BillingModelCode))
-	resp.Write(IntToBytes(msg.SharpUnitPrice))
-	resp.Write(IntToBytes(msg.SharpServiceFee))
-	resp.Write(IntToBytes(msg.PeakUnitPrice))
-	resp.Write(IntToBytes(msg.PeakServiceFee))
-	resp.Write(IntToBytes(msg.FlatUnitPrice))
-	resp.Write(IntToBytes(msg.FlatServiceFee))
-	resp.Write(IntToBytes(msg.ValleyUnitPrice))
-	resp.Write(IntToBytes(msg.ValleyServiceFee))
+	resp.Write(IntToBIN(msg.SharpUnitPrice, 4))
+	resp.Write(IntToBIN(msg.SharpServiceFee, 4))
+	resp.Write(IntToBIN(msg.PeakUnitPrice, 4))
+	resp.Write(IntToBIN(msg.PeakServiceFee, 4))
+	resp.Write(IntToBIN(msg.FlatUnitPrice, 4))
+	resp.Write(IntToBIN(msg.FlatServiceFee, 4))
+	resp.Write(IntToBIN(msg.ValleyUnitPrice, 4))
+	resp.Write(IntToBIN(msg.ValleyServiceFee, 4))
 	resp.Write([]byte(strconv.Itoa(msg.AccrualRatio)))
 
 	for _, v := range msg.RateList {
-		resp.Write(IntToBytes(v))
+		resp.Write(IntToBIN(v, 1))
 	}
 
 	resp.Write(ModbusCRC(resp.Bytes()[2:]))

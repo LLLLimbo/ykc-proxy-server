@@ -181,8 +181,8 @@ func RemoteBootstrapResponseRouter(opt *Options, hex []string, header *Header) {
 	}
 }
 
-func OfflineDataReportMessageRouter(opt *Options, hex []string, header *Header) {
-	msg := PackOfflineDataReportMessage(hex, header)
+func OfflineDataReportMessageRouter(opt *Options, raw []byte, hex []string, header *Header) {
+	msg := PackOfflineDataReportMessage(hex, raw, header)
 	log.WithFields(log.Fields{
 		"id":                               msg.Id,
 		"trade_sequence_number":            msg.TradeSeq,
