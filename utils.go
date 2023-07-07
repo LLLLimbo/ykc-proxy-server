@@ -180,14 +180,27 @@ func Cp56time2aToUnixMilliseconds(cp56time2a []byte) int64 {
 	return t.UnixNano() / int64(time.Millisecond)
 }
 
-func IntToBIN(v int, len int) []byte {
+func IntToBIN(v int, l int) []byte {
 	value := uint32(v)
-	b := make([]byte, len)
+	var b []byte
+	if l < 4 {
+		b = make([]byte, 4)
+	} else {
+		b = make([]byte, l)
+	}
+
 	binary.LittleEndian.PutUint32(b, value)
+
+	if l < len(b) {
+		b = b[:l]
+	}
 	return b
 }
 
 func BINToInt(b []byte) int {
+	for len(b) < 4 {
+		b = append(b, 0x00)
+	}
 	value := binary.LittleEndian.Uint32(b)
 	return int(value)
 }
